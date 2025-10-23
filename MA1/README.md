@@ -173,27 +173,3 @@ Email (Priority: 7)
 | enqueue | O(log n) | Percolate up at most log n levels |
 | dequeue (single) | O(log n) | Percolate down at most log n levels |
 | printJobs (all) | O(n log n) | Dequeue n elements, each O(log n) |
-
-## Important Notes
-
-- **Priority Definition**: Lower number = Higher priority (Priority 1 is processed before Priority 10)
-- **Capacity Limit**: Maximum of 100 jobs can be stored
-- **Empty Queue**: Attempting to print from an empty queue displays "No jobs in the queue."
-- **Full Queue**: Attempting to enqueue to a full queue displays "Queue is full. Cannot enqueue."
-
-## Testing
-
-The project includes both implementations:
-- **ListPriorityQueue**: Reference implementation using std::list (already working)
-- **HeapPriorityQueue**: Array-based heap implementation (newly implemented)
-
-Both implementations produce identical output. The main.cpp file is configured to use HeapPriorityQueue by default.
-
-## Files Description
-
-- **HeapPriorityQueue.h/cpp**: Heap-based priority queue implementation
-- **PrinterJob.h/cpp**: PrinterJob class definition with string and priority
-- **ListPriorityQueue.h/cpp**: List-based reference implementation
-- **main.cpp**: Interactive REPL for testing
-- **Makefile**: Build automation
-- **README.md**: This documentation file 
