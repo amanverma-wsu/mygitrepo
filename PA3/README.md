@@ -1,9 +1,5 @@
 # PA3: Amazon Inventory Management System
 
-**Author:** Aman Verma  
-**Course:** CPTS 223 - Advanced Data Structures  
-**Date:** Fall 2024
-
 ---
 
 ## Overview
@@ -277,37 +273,3 @@ Result: Successfully lists all products including those with multiple categories
 
 **Load Factor Management**: Hash table resizes when load factor exceeds 0.7, maintaining average O(1) performance.
 
----
-
-## Known Limitations
-
-1. **Review/Rating Data**: The current CSV does not contain review, question, or rating data. These fields are present in the Product class for future extensibility but will always show 0.
-
-2. **Category String Matching**: Category search requires exact string match (case-sensitive). "Toys & Games" ≠ "toys & games".
-
-3. **Memory Usage**: Two hash tables (by ID and by category) increase memory usage for faster queries.
-
-4. **No Persistence**: Changes to inventory are not saved back to the CSV file.
-
----
-
-## Compilation Details
-
-- **Standard**: C++11
-- **Compiler**: g++
-- **Flags**: `-std=c++11 -Wall -Wextra -g`
-- **Debug Symbols**: Included via `-g` flag for GDB debugging
-
----
-
-## References
-
-- Amazon Product Dataset: [Kaggle](https://www.kaggle.com/datasets/promptcloud/amazon-product-dataset-2020)
-- C++ std::hash documentation
-- CPTS 223 Course Materials
-
----
-
-## License
-
-This project is submitted as coursework for CPTS 223 at Washington State University.
