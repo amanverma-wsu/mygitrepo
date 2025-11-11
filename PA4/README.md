@@ -1,201 +1,234 @@
-# Programming Assignment 4: Movie and TV Show Search and Sort
-**CPTS 223 Advanced Data Structures**
+# PA4: Movie and TV Show Search and Sort System
 
-## Project Overview
-This project implements a command-line REPL (Read-Eval-Print Loop) system for searching and sorting movies and TV shows from the IMDB Top 1000 dataset. The application supports genre-based searches with customizable sorting options.
+---
 
-## Design Decisions
+## Overview
+
+This project implements a command-line program that allows users to **search and sort movies and TV shows** from the IMDB Top 1000 dataset. It supports searching by genre, sorting by multiple fields, and switching between **Merge Sort** and **Quick Sort** algorithms.  
+
+**Key Features**
+- Search movies or shows by genre  
+- Sort by title, year, rating, or runtime  
+- Choose ascending or descending order  
+- Switch between Merge Sort and Quick Sort  
+- O(1) genre lookup using a hash map  
+- Handles movies with multiple genres  
+
+**Dataset:** 999 entries loaded from `imdb_top_1000.csv`
+
+---
+
+## Installation
+
+### Requirements
+- C++11 or newer compiler (e.g., `g++`)
+- `make` build system
+- Dataset file: `imdb_top_1000.csv`
+
+### Build and Run
+```bash
+# Navigate to project folder
+cd PA4
+
+# Compile
+make
+
+# Run the program
+./pa4
+
+# Clean build files
+make clean
+```
+
+---
+
+## Usage
+
+When the program starts:
+```
+==================================================
+  Movie and TV Show Search and Sort System
+==================================================
+Type :help for available commands or :quit to exit
+```
+
+### 1. Find by Genre
+```
+findByGenre <genre> <sort_field> <order>
+```
+
+**Parameters**
+- `genre` — e.g., Drama, Action, Comedy  
+- `sort_field` — `title`, `year`, `rating`, `runtime`  
+- `order` — `asc` or `desc`
+
+**Examples**
+```bash
+findByGenre Drama rating desc
+findByGenre Action year asc
+findByGenre Comedy title asc
+```
+
+**Sample Output**
+```
+Using Merge Sort...
+
+Found 357 items in genre 'Drama':
+Sorted by 'rating' (descending)
+
+Title: The Shawshank Redemption (1994)
+  Rating: 9.3 | Runtime: 142 min | Director: Frank Darabont
+...
+```
+
+---
+
+### 2. Top Rated
+```
+topRated <genre> <count> <order>
+```
+
+**Parameters**
+- `genre` — Genre name  
+- `count` — Number of results to show  
+- `order` — `asc` (lowest first) or `desc` (highest first)
+
+**Examples**
+```bash
+topRated Drama 10 desc
+topRated Action 5 desc
+topRated Horror 10 asc
+```
+
+---
+
+### 3. Other Commands
+```
+:help   # List all available commands
+:quit   # Exit the program
+```
+
+---
+
+## Switching Sorting Algorithms
+
+You can choose between **Merge Sort** and **Quick Sort** in `main.cpp`.
+
+1. Open `main.cpp`
+2. Find the constant:
+   ```cpp
+   const int SORTING_ALGORITHM = 1; // 1 = Merge Sort, 2 = Quick Sort
+   ```
+3. Change its value and recompile:
+   ```bash
+   make clean
+   make
+   ```
+
+When running, the program will display the active algorithm:
+```
+Using Merge Sort...
+```
+or
+```
+Using Quick Sort...
+```
+
+---
+
+## Design Overview
 
 ### Data Structures
-
-#### 1. MediaItem Class
-Encapsulates all information about a movie or TV show:
-- Title, year, rating, runtime
-- Multiple genres (stored as vector)
-- Certificate, overview, director
-
-**Justification**: Object-oriented design allows for clean encapsulation and easy extension.
-
-#### 2. Storage: `vector<MediaItem>`
-Stores all media items in a single contiguous vector.
-
-**Justification**:
-- Memory efficient with good cache locality
-- Simple iteration for building indices
-- O(1) access by index
-- Modern C++ preferred container for sequential data
-
-#### 3. Genre Index: `unordered_map<string, vector<MediaItem*>>`
-Maps genre names to pointers of items in that genre.
-
-**Justification**:
-- O(1) average-case genre lookup
-- Pointers avoid data duplication (items can be in multiple genres)
-- Case-insensitive genre matching via lowercase keys
-- Trade-off: Extra memory for pointers vs. fast lookup time
+- `vector<MediaItem>` — stores all movies and TV shows  
+- `unordered_map<string, vector<MediaItem*>>` — maps each genre to a list of movies (O(1) lookup)
 
 ### Sorting Algorithms
-
-Both **Merge Sort** and **Quick Sort** are implemented as generic function templates that accept:
-- Any data type via templates
-- Custom comparison functions via `std::function<bool(const T&, const T&)>`
-
-#### Merge Sort
-- **Time Complexity**: O(n log n) guaranteed
-- **Space Complexity**: O(n) for temporary arrays
-- **Stability**: Stable sort
-- **Use Case**: When stability and guaranteed performance are needed
-
-#### Quick Sort
-- **Time Complexity**: O(n log n) average, O(n²) worst case
-- **Space Complexity**: O(log n) for recursion stack
-- **Stability**: Not stable
-- **Use Case**: General purpose, often faster in practice
-
-**Selection Mechanism**: The `SORTING_ALGORITHM` constant (1 for Merge Sort, 2 for Quick Sort) allows switching between algorithms.
+| Algorithm   | Time Complexity | Space | Stable | Best Use |
+|--------------|----------------|--------|---------|-----------|
+| Merge Sort   | O(n log n)     | O(n)   | Yes     | Predictable performance |
+| Quick Sort   | O(n log n)*    | O(log n) | No    | Faster average case |
 
 ### CSV Parsing
+- Splits multiple genres per movie  
+- Extracts numeric runtime values (e.g., “142 min”)  
+- Converts genre names to lowercase for case-insensitive search  
+- Handles missing or malformed data safely  
 
-**Challenges**:
-1. Space-delimited format (not comma-delimited despite .csv extension)
-2. Fields containing spaces are wrapped in quotes
-3. Multiple genres within a single field (comma-separated)
-4. Runtime format: "142 min" requires extraction
+---
 
-**Solution**:
-- Custom parser handles quote-delimited fields
-- Genre parser splits on commas and trims whitespace
-- Runtime parser extracts numeric value
-- Robust error handling for malformed lines
+## Testing
 
-### Missing Data Handling
+The program runs **automated unit tests** at startup to verify sorting correctness and stability:
+```
+=== Running Tests ===
+✓ Merge Sort passed
+✓ Quick Sort passed
+✓ MediaItem Sorting passed
+✓ Edge Cases passed
+=== All Tests Passed ===
+```
 
-**Approach**:
-- Empty genres: Skip item or use empty vector
-- Missing runtime: Set to 0
-- Invalid numeric fields: Use try-catch, skip line with warning
-- Document all decisions in code comments
+**Manual Testing Examples**
+```bash
+findByGenre Drama rating desc
+topRated Comedy 5 desc
+findByGenre Sci-Fi runtime asc
+```
 
-**Justification**: Graceful degradation ensures maximum data utilization while maintaining data integrity.
+---
 
 ## File Structure
 ```
 PA4/
-├── main.cpp              # REPL interface and command processing
-├── MediaItem.h/.cpp      # Media item class
-├── MovieDatabase.h/.cpp  # Data storage and CSV loading
-├── Sort.h/.cpp           # Generic sorting algorithms
-├── Comparators.h         # Comparator factory for different fields
-├── Testing.h/.cpp        # Test suite with cassert
-├── Makefile              # Build configuration
-├── README.md             # This file
-└── imdb_top_1000.csv     # Dataset (not included in repo)
+├── main.cpp
+├── MediaItem.h / MediaItem.cpp
+├── MovieDatabase.h / MovieDatabase.cpp
+├── Sort.h / Sort.cpp
+├── Comparators.h
+├── Testing.h / Testing.cpp
+├── Makefile
+├── README.md
+└── imdb_top_1000.csv
 ```
 
-## Building and Running
+---
 
-### Compile
+## Troubleshooting
+
+**Compilation errors**
 ```bash
-make
+make clean && make
 ```
 
-### Run
-```bash
-make run
-# OR
-./pa4
+**CSV file not found**
+- Ensure `imdb_top_1000.csv` is in the same directory as the executable
+
+**Incorrect sorting results**
+- Recompile after changing `SORTING_ALGORITHM`
+- Verify with automated tests
+
+---
+
+## Example Run
 ```
+$ ./pa4
+==================================================
+  Movie and TV Show Search and Sort System
+==================================================
 
-### Clean
-```bash
-make clean
+Running automated tests...
+=== All Tests Passed ===
+
+Loading data from CSV...
+Successfully loaded 999 items from imdb_top_1000.csv
+
+PA4> findByGenre Drama rating desc
+Using Merge Sort...
+
+Found 357 items in genre 'Drama':
+Sorted by 'rating' in descending order
+
+Title: The Shawshank Redemption (1994)
+  Rating: 9.3 | Runtime: 142 min | Director: Frank Darabont
+...
 ```
-
-## Usage
-
-### Available Commands
-
-#### 1. findByGenre
-Find all movies/TV shows in a genre and sort them.
-
-**Syntax**: `findByGenre <genre> <sort_field> <order>`
-
-**Parameters**:
-- `genre`: Genre name (e.g., Drama, Action, Comedy)
-- `sort_field`: Field to sort by (title, year, rating, runtime)
-- `order`: Sort order (asc or desc)
-
-**Example**:
-```
-PA4> findByGenre Action rating desc
-```
-
-#### 2. topRated
-Show top N movies/TV shows in a genre by rating.
-
-**Syntax**: `topRated <genre> <count> <order>`
-
-**Parameters**:
-- `genre`: Genre name
-- `count`: Number of items to display
-- `order`: Sort order (asc or desc)
-
-**Example**:
-```
-PA4> topRated Drama 10 desc
-```
-
-#### 3. Built-in Commands
-- `:help` - Display help message
-- `:quit` - Exit the application
-
-## Testing Strategy
-
-### Test Coverage
-
-#### 1. Sorting Algorithm Tests
-- **Integer sorting**: Normal case (unsorted), edge case (already sorted)
-- **String sorting**: Normal case (random), edge case (single element)
-- **Descending order**: Both algorithms with reverse comparator
-- **Edge cases**: Empty vector, single element, all duplicates
-
-#### 2. MediaItem Sorting Tests
-- Sort by rating (ascending/descending)
-- Sort by year (ascending/descending)
-- Sort by title and runtime
-- Verify comparator correctness
-
-#### 3. Data Structure Tests
-- Genre lookup with valid/invalid genres
-- Multiple genres per item
-- Case-insensitive genre matching
-
-### Test Cases Justification
-
-**Normal Cases**: Verify expected behavior with typical inputs
-**Edge Cases**: Ensure robustness with boundary conditions
-- Empty collections
-- Single elements
-- Duplicate values
-- Already sorted data
-- Reverse sorted data
-
-**Why These Tests**: These cases cover common usage patterns and potential failure points, ensuring algorithm correctness across diverse scenarios.
-
-### Running Tests
-Tests run automatically on program startup. All tests use `cassert` for validation.
-
-## Algorithm Selection
-
-To switch between sorting algorithms, modify the constant in `main.cpp`:
-```cpp
-const int SORTING_ALGORITHM = 1;  // 1 = Merge Sort, 2 = Quick Sort
-```
-
-## Implementation Notes
-
-1. **Generic Templates**: Both sorting algorithms work with any comparable type
-2. **Comparator Pattern**: Flexible sorting criteria via function objects
-3. **Case-Insensitive Genres**: All genre comparisons use lowercase conversion
-4. **Memory Efficiency**: Pointers used in results to avoid copying MediaItem objects
-5. **Error Handling**: Comprehensive validation for user input and CSV parsing
